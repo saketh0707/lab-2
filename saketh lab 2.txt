@@ -1,0 +1,38 @@
+# Load necessary libraries
+library(tidyverse)
+library(tidymodels)
+library(janitor)
+
+# Load the dataset
+student_data <- read_csv("C:/Users/Akhila Ranga/Desktop/saketh Students .CSV")
+
+# Convert final_result to factor with levels "0" and "1"
+student_data$final_result <- as.factor(student_data$final_result)
+
+# Selecting variables for prediction
+predictors <- student_data %>%
+  select(code_module, gender, highest_education, final_result)
+
+# Splitting the data into training and testing sets (80% training, 20% testing)
+set.seed(123) # for reproducibility
+split <- initial_split(predictors, prop = 0.8)
+train_data <- training(split)
+test_data <- testing(split)
+
+# Model Building
+# Construct a logistic regression model
+logistic_model <- glm(final_result ~ ., data = train_data, family = binomial)
+
+# Making predictions on the testing set
+predictions <- predict(logistic_model, newdata = test_data, type = "response")
+
+# Check if predictions are generated successfully
+if (is.null(predictions)) {
+  stop("Error: Predictions not generated successfully.")
+}
+
+# Converting probabilities to binary predictions (0 or 1)
+binary_predictions <- ifelse(predictions > 0.5, 1, 0)
+
+# View the first few rows of the binary predictions
+head(binary_predictions)
